@@ -187,7 +187,7 @@ input:focus { border-color: #a78bfa; }
     <div id="timer-ui" class="hidden">
       <div class="mic-wave" id="mic-animation">🎙️</div>
       <div id="timer">40</div>
-      <div class="transcript-live" id="transcript-live">Listening…</div>
+      <div class="transcript-live" id="transcript-live" style="color:#86efac">🎤 Listening — speak now…</div>
     </div>
     <button id="start-q-btn" class="btn-main btn-start" onclick="startQuestionTimer()">▶ Start Recording</button>
     <button id="next-btn" class="btn-main hidden" onclick="prepareNextQuestion()">Next Question →</button>
@@ -205,7 +205,7 @@ input:focus { border-color: #a78bfa; }
   <div class="score-name" id="score-name-display"></div>
   <div class="score-cats">
     <div class="score-cat">
-      <div class="cat-val" id="cat-grammar">—</div>
+      <div class="cat-val" id="cat-task">—</div>
       <div class="cat-name">Task<br>Response</div>
       <div class="cat-max">/ 10</div>
     </div>
@@ -572,7 +572,20 @@ function finishExam() {
   hide('exam-screen');
   show('score-screen');
   document.getElementById('score-name-display').innerText = userName + ' · Card ' + currentCardID;
-  scoreWithGemini();
+  const noSpeech = transcripts.filter(t => t.answer === "(no speech detected)").length;
+  if (noSpeech > 4) {
+    document.getElementById('scoring-spinner').innerHTML = `
+      <div style="background:rgba(244,63,94,0.15);border:1px solid #f43f5e;border-radius:12px;padding:20px;color:#fda4af;line-height:1.7">
+        <strong>⚠️ Speech not captured</strong><br>
+        Your browser did not record your spoken answers. This usually happens because:<br>
+        • You are opening the file directly (file://). Try using <strong>Chrome or Edge</strong><br>
+        • Microphone permission was not granted<br>
+        • Speech recognition is not supported in your browser<br><br>
+        <strong>Please use Google Chrome and allow microphone access.</strong>
+      </div>`;
+  } else {
+    scoreWithGemini();
+  }
 }
 
 function startSpeechRecognition() {
@@ -590,7 +603,11 @@ function startSpeechRecognition() {
       else interim += t;
     }
     currentTranscript += final;
-    document.getElementById('transcript-live').innerText = interim ? `"${interim}"` : '';
+    if (interim) {
+      document.getElementById('transcript-live').innerHTML = `<span style="color:#fbbf24">"${interim}"</span>`;
+    } else if (currentTranscript.trim()) {
+      document.getElementById('transcript-live').innerHTML = `<span style="color:#86efac">✓ Captured: "${currentTranscript.trim().slice(-60)}"</span>`;
+    }
   };
   recognition.onerror = () => {};
   try { recognition.start(); } catch(e) {}
@@ -612,6 +629,7 @@ async function scoreWithGemini() {
 
   const prompt = `You are a strict but fair English language examiner assessing Upper-Intermediate (B2) level students.
 A student completed an 8-question speaking exam. Evaluate their spoken responses below.
+Note: answers marked "(no speech detected)" mean the microphone did not capture the response - skip those questions and evaluate only the ones that have actual answers. Do NOT give 0 for the whole exam just because some answers are missing.
 
 Score across exactly 3 categories (total must equal exactly 25):
 - Task Response: 0-10 points (how well the student addresses and develops the question)
@@ -651,10 +669,16 @@ ${qaBlock}`;
     if (data.error) throw new Error(data.error.message);
     let raw = data?.choices?.[0]?.message?.content || '';
     raw = raw.replace(/```json|```/g, '').trim();
-    // Extract JSON object if there's surrounding text
     const jsonMatch = raw.match(/\{[\s\S]*\}/);
-    if (!jsonMatch) throw new Error("No valid JSON returned");
+    if (!jsonMatch) throw new Error("No valid JSON returned from AI");
     const result = JSON.parse(jsonMatch[0]);
+    // Ensure all fields exist
+    if (result.task === undefined) result.task = 0;
+    if (result.grammar === undefined) result.grammar = 0;
+    if (result.vocabulary === undefined) result.vocabulary = 0;
+    if (!result.question_feedback) result.question_feedback = [];
+    if (!result.mistakes) result.mistakes = [];
+    if (!result.tips) result.tips = "Keep practising!";
     displayScore(result);
   } catch (e) {
     document.getElementById('scoring-spinner').innerHTML = `
