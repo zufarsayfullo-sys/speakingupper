@@ -191,18 +191,11 @@ input:focus { border-color: #a78bfa; }
     </div>
     <button id="start-q-btn" class="btn-main btn-start" onclick="startQuestionTimer()">▶ Start Recording</button>
     <button id="next-btn" class="btn-main hidden" onclick="prepareNextQuestion()">Next Question →</button>
+    <button id="back-btn" class="btn-main hidden" onclick="goBackQuestion()" style="background:#475569">← Redo</button>
   </div>
 </div>
 
-<!-- UPLOAD RESULT -->
-<div class="container hidden" id="result-screen">
-  <h2 id="final-status">Uploading…</h2>
-  <div class="warning-box" id="warning-area">
-    ⚠️ DO NOT CLOSE THIS PAGE YET.<br>
-    Your audio is being sent to the teacher and your answers are being evaluated.
-  </div>
-  <p id="done-message">Please wait…</p>
-</div>
+
 
 <!-- SCORE SCREEN -->
 <div class="container hidden" id="score-screen">
@@ -213,17 +206,17 @@ input:focus { border-color: #a78bfa; }
   <div class="score-cats">
     <div class="score-cat">
       <div class="cat-val" id="cat-grammar">—</div>
+      <div class="cat-name">Task<br>Response</div>
+      <div class="cat-max">/ 10</div>
+    </div>
+    <div class="score-cat">
+      <div class="cat-val" id="cat-grammar">—</div>
       <div class="cat-name">Grammar</div>
       <div class="cat-max">/ 10</div>
     </div>
     <div class="score-cat">
-      <div class="cat-val" id="cat-task">—</div>
-      <div class="cat-name">Task<br>Achievement</div>
-      <div class="cat-max">/ 10</div>
-    </div>
-    <div class="score-cat">
       <div class="cat-val" id="cat-vocab">—</div>
-      <div class="cat-name">Lexical<br>Resource</div>
+      <div class="cat-name">Vocabulary</div>
       <div class="cat-max">/ 5</div>
     </div>
   </div>
@@ -241,8 +234,8 @@ input:focus { border-color: #a78bfa; }
 </div>
 
 <script>
-const DEEPSEEK_KEY = "sk-527571fb922941168935f8a3d939876f";
-const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbymSyhzgnVgeV7x33yrTLNsfLJywDTY8G5Wv9IGWGAwcjxDZzymszYi3BacTIvCrjI/exec";
+const PROXY_URL = "https://script.google.com/macros/s/AKfycbwnEejhbyVlCam_2zTsn48oHPQ4Gtf_m7Mcr5V5jkibnZcjME0nHYUSDFp0udF30s0g/exec";
+
 
 const cards = {
   'A': {
@@ -483,8 +476,7 @@ let currentCard = null;
 let currentIdx = 0;
 let timerVal = 40;
 let timerInterval;
-let mediaRecorder;
-let audioChunks = [];
+
 let recognition = null;
 let currentTranscript = "";
 let transcripts = [];
@@ -512,17 +504,9 @@ async function startExam(key) {
   currentCard = cards[key];
   currentIdx = 0;
   transcripts = [];
-  try {
-    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-    mediaRecorder = new MediaRecorder(stream);
-    audioChunks = [];
-    mediaRecorder.ondataavailable = e => audioChunks.push(e.data);
-    mediaRecorder.onstop = autoUpload;
-    mediaRecorder.start();
-    hide('menu-screen'); show('exam-screen');
-    document.getElementById('card-display-title').innerText = `Card ${key}: ${currentCard.topic}`;
-    prepareQuestion();
-  } catch (err) { alert("Microphone access denied. Please allow microphone access and try again."); }
+  hide('menu-screen'); show('exam-screen');
+  document.getElementById('card-display-title').innerText = `Card ${key}: ${currentCard.topic}`;
+  prepareQuestion();
 }
 
 function prepareQuestion() {
@@ -542,11 +526,13 @@ function prepareQuestion() {
   document.getElementById('transcript-live').innerText = '';
   show('start-q-btn');
   hide('next-btn');
+  if (currentIdx > 0) { show('back-btn'); } else { hide('back-btn'); }
 }
 
 function startQuestionTimer() {
   hide('answer-structure-box');
   hide('start-q-btn');
+  hide('back-btn');
   show('timer-ui');
   document.getElementById('mic-animation').style.display = 'flex';
   show('next-btn');
@@ -564,18 +550,29 @@ function startQuestionTimer() {
 function prepareNextQuestion() {
   clearInterval(timerInterval);
   stopSpeechRecognition();
-  transcripts.push({
+  transcripts[currentIdx] = {
     question: currentCard.questions[currentIdx],
     answer: currentTranscript.trim() || "(no speech detected)"
-  });
+  };
   currentIdx++;
   prepareQuestion();
 }
 
+function goBackQuestion() {
+  clearInterval(timerInterval);
+  stopSpeechRecognition();
+  if (currentIdx > 0) {
+    currentIdx--;
+    transcripts.splice(currentIdx, 1);
+    prepareQuestion();
+  }
+}
+
 function finishExam() {
-  mediaRecorder.stop();
   hide('exam-screen');
-  show('result-screen');
+  show('score-screen');
+  document.getElementById('score-name-display').innerText = userName + ' · Card ' + currentCardID;
+  scoreWithGemini();
 }
 
 function startSpeechRecognition() {
@@ -603,29 +600,7 @@ function stopSpeechRecognition() {
   if (recognition) { try { recognition.stop(); } catch(e) {} recognition = null; }
 }
 
-async function autoUpload() {
-  const blob = new Blob(audioChunks, { type: 'audio/webm' });
-  const reader = new FileReader();
-  reader.readAsDataURL(blob);
-  reader.onloadend = async () => {
-    const base64 = reader.result.split(',')[1];
-    try {
-      await fetch(SCRIPT_URL, {
-        method: "POST", mode: "no-cors",
-        body: JSON.stringify({ audio: base64, name: `${userName} (Card ${currentCardID})` })
-      });
-    } catch(e) {}
-    document.getElementById('final-status').innerText = "✅ Exam Sent!";
-    document.getElementById('done-message').innerText = `Well done, ${userName}! Calculating your score…`;
-    hide('warning-area');
-    setTimeout(() => {
-      hide('result-screen');
-      show('score-screen');
-      document.getElementById('score-name-display').innerText = userName + " · Card " + currentCardID;
-      scoreWithGemini();
-    }, 1500);
-  };
-}
+
 
 async function scoreWithGemini() {
   show('scoring-spinner');
@@ -639,9 +614,9 @@ async function scoreWithGemini() {
 A student completed an 8-question speaking exam. Evaluate their spoken responses below.
 
 Score across exactly 3 categories (total must equal exactly 25):
-- Grammar: 0-10 points
-- Task Achievement: 0-10 points
-- Lexical Resource: 0-5 points
+- Task Response: 0-10 points (how well the student addresses and develops the question)
+- Grammar: 0-10 points (accuracy and range of grammatical structures)
+- Vocabulary: 0-5 points (range and accuracy of word choice)
 
 For each question, provide a short individual feedback (1-2 sentences) on how well the student answered.
 Also identify up to 5 specific mistakes (grammar or vocabulary errors) with brief, clear corrections.
@@ -667,16 +642,10 @@ Student answers:
 ${qaBlock}`;
 
   try {
-    const res = await fetch("https://api.deepseek.com/chat/completions", {
+    const res = await fetch(PROXY_URL, {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${DEEPSEEK_KEY}`
-      },
-      body: JSON.stringify({
-        model: "deepseek-chat",
-        messages: [{ role: "user", content: prompt }]
-      })
+      headers: { "Content-Type": "text/plain" },
+      body: JSON.stringify({ prompt: prompt })
     });
     const data = await res.json();
     if (data.error) throw new Error(data.error.message);
