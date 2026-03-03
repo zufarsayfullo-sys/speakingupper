@@ -1,390 +1,736 @@
-<!DOCTYPE html><html lang="en"><head>    <meta charset="UTF-8">    <meta name="viewport" content="width=device-width, initial-scale=1.0">    <title>Upper-Intermediate Speaking Exam Platform</title>    <style>        :root {            --primary: #6366f1;            --accent: #f43f5e;            --bg-dark: #0f172a;        }
-        body {            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;            margin: 0;            padding: 0;            background: linear-gradient(rgba(15, 23, 42, 0.85), rgba(15, 23, 42, 0.85)),                         url('https://images.unsplash.com/photo-1434031211128-095490e7e7bb?auto=format&fit=crop&q=80&w=2070');            background-size: cover;            background-attachment: fixed;            color: white;            min-height: 100vh;            display: flex;            flex-direction: column;            align-items: center;            overflow-x: hidden;        }
-        .clue {            position: absolute;            background: rgba(255, 255, 255, 0.08);            padding: 10px 18px;            border-radius: 20px;            font-size: 0.85rem;            color: #cbd5e1;            pointer-events: none;            animation: float 12s infinite ease-in-out;            border: 1px solid rgba(255,255,255,0.1);            z-index: 0;            white-space: nowrap;        }
-        @keyframes float {            0%, 100% { transform: translate(0, 0) rotate(0deg); }            33% { transform: translate(15px, -25px) rotate(3deg); }            66% { transform: translate(-10px, 15px) rotate(-3deg); }        }
-        header { margin: 30px 0; text-align: center; z-index: 1; }
-        .container {            width: 90%;            max-width: 800px;            background: rgba(30, 41, 59, 0.95);            backdrop-filter: blur(15px);            padding: 40px;            border-radius: 24px;            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7);            z-index: 10;            text-align: center;            border: 1px solid rgba(255,255,255,0.1);        }
-        input[type="text"] {            padding: 15px;            width: 80%;            border-radius: 8px;            border: 1px solid var(--primary);            background: rgba(255,255,255,0.1);            color: white;            font-size: 1.1rem;            margin-bottom: 20px;            outline: none;        }
-        .grid {            display: grid;            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));            gap: 15px;            margin-top: 20px;        }
-        .card-btn {            background: rgba(99, 102, 241, 0.1);            border: 1px solid var(--primary);            color: white;            padding: 18px;            border-radius: 12px;            cursor: pointer;            transition: all 0.3s;        }
-        .card-btn:hover { background: var(--primary); transform: scale(1.05); }
-        .hidden { display: none; }                #timer {            font-size: 4rem;            font-weight: 800;            color: var(--accent);            margin: 10px 0;        }
-        .mic-wave {            width: 70px;            height: 70px;            background: var(--accent);            border-radius: 50%;            margin: 15px auto;            display: none;            align-items: center;            justify-content: center;            animation: pulse 1.5s infinite;        }
-        @keyframes pulse {            0% { box-shadow: 0 0 0 0 rgba(244, 63, 94, 0.7); }            70% { box-shadow: 0 0 0 20px rgba(244, 63, 94, 0); }            100% { box-shadow: 0 0 0 0 rgba(244, 63, 94, 0); }        }
-        .btn-main {            background: #10b981;            color: white;            border: none;            padding: 15px 35px;            border-radius: 10px;            font-size: 1.2rem;            font-weight: bold;            cursor: pointer;            margin: 10px;        }
-        .btn-start { background: var(--primary); }
-        .warning-box {
-            background: rgba(244, 63, 94, 0.2);
-            border: 1px solid var(--accent);
-            padding: 20px;
-            border-radius: 12px;
-            margin: 20px 0;
-            color: #fda4af;
-            font-weight: bold;
-        }
-        .answer-structure {
-            background: rgba(99, 102, 241, 0.15);
-            border: 1px solid rgba(99, 102, 241, 0.5);
-            border-radius: 12px;
-            padding: 14px 18px;
-            margin: 16px 0 20px 0;
-            color: #c7d2fe;
-            font-size: 0.92rem;
-            line-height: 1.6;
-            text-align: left;
-        }
-        .answer-structure strong {
-            color: #a5b4fc;
-            display: block;
-            margin-bottom: 6px;
-            font-size: 0.8rem;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-        }
-        .answer-structure .structure-text {
-            font-style: italic;
-        }
-    </style></head><body>
-    <div class="clue" style="top: 15%; left: 5%;">"To be honest..."</div>    <div class="clue" style="top: 10%; right: 10%;">"From my perspective"</div>    <div class="clue" style="bottom: 20%; left: 10%;">"In addition to that"</div>    <div class="clue" style="bottom: 10%; right: 5%;">"Essentially..."</div>    <div class="clue" style="top: 40%; left: 2%;">"Significant"</div>    <div class="clue" style="top: 60%; right: 3%;">"Pros and Cons"</div>
-    <header>        <h1>Upper-Intermediate Speaking Exam</h1>    </header>
-    <div class="container" id="name-screen">        <h2>Welcome</h2>        <p>Please enter your full name to start the exam:</p>        <input type="text" id="user-name" placeholder="Full Name" autocomplete="off">        <br>        <button class="btn-main" onclick="showMenu()">Continue to Cards</button>    </div>
-    <div class="container hidden" id="menu-screen">        <h2>Select Your Card</h2>        <div class="grid" id="card-grid"></div>    </div>
-    <div class="container hidden" id="exam-screen">        <h2 id="card-display-title">Card</h2>        <h3 id="part-indicator" style="color: #94a3b8;">Part 1</h3>                <div id="question-box">            <p id="question-text" style="font-size: 1.6rem; margin-bottom: 20px; line-height: 1.4;">Waiting...</p>
-            <div id="answer-structure-box" class="answer-structure">
-                <strong>💡 Answer Structure</strong>
-                <span class="structure-text" id="structure-text"></span>
-            </div>
-            <div id="timer-ui" class="hidden">                <div class="mic-wave" id="mic-animation">🎙️</div>                <div id="timer">30</div>            </div>                        <button id="start-q-btn" class="btn-main btn-start" onclick="startQuestionTimer()">Start Recording</button>            <button id="next-btn" class="btn-main hidden" onclick="prepareNextQuestion()">Next Question</button>        </div>    </div>
-    <div class="container hidden" id="result-screen">        <h2 id="final-status">Uploading...</h2>
-        <div class="warning-box" id="warning-area">
-            ⚠️ WARNING: DO NOT CLOSE THIS PAGE YET.<br>
-            Your audio is being sent to the teacher. This may take a moment.
-        </div>
-        <p id="done-message">Processing your results.</p>
-        <br>
-        <button onclick="location.reload()" style="background:none; border:none; color:gray; cursor:pointer; text-decoration: underline;">Take another test</button>    </div>
-    <script>
-        const cards = {
-            'A': {
-                topic: 'Communication',
-                questions: [
-                    "Do you write letters?",
-                    "What method of communication do you prefer to contact people?",
-                    "What do you think about face-to-face communication?",
-                    "How often do you text people?",
-                    "Do you think handwritten letters will be common in the future?",
-                    "What are the advantages of electronic communication?",
-                    "Do you think we depend too much on gadgets?",
-                    "What are the effects of the Internet on society?"
-                ],
-                structures: [
-                    "Yes/No, (rarely/sometimes/often) + to (who) + because/since + (reason). For example, the last time I wrote a letter was...",
-                    "I prefer + (method) + because + (reason) + It allows me to... + For instance, when I need to...",
-                    "I think face-to-face communication is + (adj) + because + (reason) + For example, you can see...",
-                    "I text people + (how often) + mainly + (who) + because + (reason) + For example...",
-                    "I (don't) think so + because + (reason) + However, + (counterpoint) + In the future...",
-                    "There are several advantages + First, ... + Second, ... + For example... + Overall...",
-                    "Yes/No, I think + (opinion) + because + (reason) + For instance, people nowadays...",
-                    "The Internet has + (positive/negative) effects + such as ... + For example, it has changed the way we..."
-                ]
-            },
-            'B': {
-                topic: 'Binge-Watching & Screen Time',
-                questions: [
-                    "How many hours do you spend in front of the screen?",
-                    "Do you watch TV programs or online videos?",
-                    "What type of videos do you watch most often?",
-                    "Have your viewing habits changed in the last few years?",
-                    "What is binge watching?",
-                    "Why do you think people binge-watch?",
-                    "What is your attitude to binge-watching?",
-                    "How do people watch TV series nowadays?"
-                ],
-                structures: [
-                    "I spend about + (time) + per day + mainly + (activity) + because + (reason) + For example...",
-                    "I (mostly) watch + (type) + because + (reason) + For example, I recently watched...",
-                    "I usually watch + (type) + because + (reason) + such as... + They help me...",
-                    "Yes/No, + (how they changed) + Before I used to... + but now I... + because...",
-                    "Binge-watching is + (definition) + It means + (explain) + For example, watching several episodes...",
-                    "I think people binge-watch + because + (reason 1) + and also + (reason 2) + For example...",
-                    "My attitude is + (positive/negative/mixed) + because + (reason) + However... + For instance...",
-                    "Nowadays people watch + (how) + instead of + (old way) + because + (reason) + For example..."
-                ]
-            },
-            'C': {
-                topic: 'Family & Regrets',
-                questions: [
-                    "Do you come from a large family?",
-                    "Do you get on well with your relatives?",
-                    "Whom are you close to in your family?",
-                    "Whom do you turn to for advice?",
-                    "What would you do if you could turn back time?",
-                    "What is your biggest regret?",
-                    "Is there any place you would live in if you had a chance?",
-                    "What would you do if you could read people's minds?"
-                ],
-                structures: [
-                    "Yes/No, my family is + (size) + We have + (members) + and we usually...",
-                    "Yes/No, + (how well) + because + (reason) + For example, we often...",
-                    "I am closest to + (person) + because + (reason) + We usually + (activity together)...",
-                    "I usually turn to + (person) + because + (reason) + For example, when I have a problem...",
-                    "If I could turn back time, I would + (action) + because + (reason) + This would have...",
-                    "My biggest regret is + (thing) + because + (reason) + I wish I had...",
-                    "If I had a chance, I would live in + (place) + because + (reason 1) + and + (reason 2)...",
-                    "If I could read minds, I would + (action) + because + (reason) + For example, I would..."
-                ]
-            },
-            'D': {
-                topic: 'Language & Culture',
-                questions: [
-                    "Why are you learning English?",
-                    "Do you read the news in English?",
-                    "What cultural events or festivals do you attend?",
-                    "Do you enjoy trying food from different countries?",
-                    "Speak about a foreign culture you know or like.",
-                    "Describe a popular cultural event in your country.",
-                    "Why do you think this event is important?",
-                    "What new culture would you like to explore and why?"
-                ],
-                structures: [
-                    "I am learning English + because/in order to + (reason 1) + and also + (reason 2) + For example...",
-                    "Yes/No, + (how often) + because + (reason) + For instance, I recently read about...",
-                    "I (often/sometimes) attend + (event) + because + (reason) + For example, last time I went...",
-                    "Yes/No, I + (enjoy/don't enjoy) + trying + (type of food) + because + (reason) + For example...",
-                    "A culture I know well is + (culture) + It is interesting because + (reason) + For example...",
-                    "(Event name) is a popular event + where people + (activity) + It usually takes place + (when/where)...",
-                    "I think it is important + because + (reason 1) + and + (reason 2) + It helps people to...",
-                    "I would like to explore + (culture) + because + (reason) + I am especially interested in..."
-                ]
-            },
-            'E': {
-                topic: 'Technology & Generation Gap',
-                questions: [
-                    "Do you think you are tech-savvy?",
-                    "What do you usually use the Internet for?",
-                    "Have you ever been hacked?",
-                    "Have you heard of Internet-based cyber-attacks?",
-                    "What does the word 'generation gap' mean?",
-                    "How does the lifestyle of your parents differ from yours?",
-                    "Speak how your life would be without the Internet.",
-                    "Describe the best invention of the century for you."
-                ],
-                structures: [
-                    "Yes/No, I think I am + (level) + tech-savvy + because + (reason) + For example, I can...",
-                    "I mainly use the Internet for + (purpose 1) + and + (purpose 2) + For example, every day I...",
-                    "Yes/No, + (if yes: what happened + how I solved it) / (if no: but I know someone who...)",
-                    "Yes/No, I have heard that + (describe cyber-attack) + It is dangerous because...",
-                    "Generation gap means + (definition) + It refers to + (explanation) + For example...",
-                    "My parents' lifestyle differs + in terms of + (aspect 1) + and + (aspect 2) + For example...",
-                    "Without the Internet, my life would be + (how) + I would have to + (alternative) + It would affect...",
-                    "I think the best invention is + (invention) + because + (reason 1) + and + (reason 2) + It has changed..."
-                ]
-            },
-            'F': {
-                topic: 'Money & Saving',
-                questions: [
-                    "How do you usually save money?",
-                    "Do you prefer to save money in a bank or invest it? Why?",
-                    "What do you think is the best way to invest money? Why?",
-                    "Do you think it's important to start saving money at a young age? Why or why not?",
-                    "How do you spend your money?",
-                    "What are some common mistakes people make with spending their money?",
-                    "How can someone learn more about saving money and investing?",
-                    "What would you invest in if you had a million dollars?"
-                ],
-                structures: [
-                    "I usually save money by + (method) + because + (reason) + For example, every month I...",
-                    "I prefer to + (save/invest) + because + (reason) + For instance...",
-                    "I think the best way is + (method) + because + (reason 1) + and + (reason 2)...",
-                    "Yes/No, I think it is + (important/not important) + because + (reason) + For example, if you start early...",
-                    "I usually spend my money on + (category 1) + and + (category 2) + For example...",
-                    "A common mistake is + (mistake) + because + (reason) + For example, many people...",
-                    "Someone can learn by + (method 1) + or + (method 2) + such as reading books or following...",
-                    "If I had a million dollars, I would invest in + (thing) + because + (reason) + This would..."
-                ]
-            },
-            'G': {
-                topic: 'Crime & Safety',
-                questions: [
-                    "Do you think your city is safe? Why or why not?",
-                    "What are some common crimes in your area?",
-                    "Have you ever witnessed a crime? What happened?",
-                    "Have you ever broken a rule or law?",
-                    "How do you feel about security cameras in public places?",
-                    "Do you think harsh punishments reduce crime? Why or why not?",
-                    "What can people do to stay safe and avoid becoming a victim of crime?",
-                    "What rules or laws do you think are the most important for a safe society?"
-                ],
-                structures: [
-                    "Yes/No, I think my city is + (safe/unsafe) + because + (reason) + For example...",
-                    "Some common crimes are + (crime 1) + and + (crime 2) + For instance, in my area...",
-                    "Yes/No + (if yes: describe what, when, how) / (if no: but I have heard about...)",
-                    "Yes/No + (if yes: describe situation + what I learned) / (if no: because I always try to...)",
-                    "I feel + (positive/negative/neutral) + about them + because + (reason) + For example...",
-                    "Yes/No, I think + (opinion) + because + (reason) + However, some people argue...",
-                    "People can stay safe by + (action 1) + and + (action 2) + For example, you should always...",
-                    "I think the most important rules are + (rule 1) + and + (rule 2) + because + (reason)..."
-                ]
-            },
-            'H': {
-                topic: 'Emotions & Behaviour',
-                questions: [
-                    "What makes you feel happy and why?",
-                    "How do you deal with stress or anxiety?",
-                    "What do you do when you feel angry?",
-                    "How do you usually express your feelings to others?",
-                    "Describe a time when you felt really proud of yourself.",
-                    "What are some positive behaviors that you admire in others?",
-                    "How do you react when someone is rude to you?",
-                    "How do you support a friend who is feeling sad?"
-                ],
-                structures: [
-                    "(Thing/activity) makes me happy + because + (reason) + For example, whenever I... + I feel...",
-                    "I usually deal with stress by + (method) + because + (reason) + For example, when I feel stressed...",
-                    "When I feel angry, I + (action) + because + (reason) + This helps me to...",
-                    "I usually express my feelings by + (method) + because + (reason) + For example...",
-                    "Once, I felt proud when + (situation) + because + (reason) + It taught me that...",
-                    "I admire + (behavior) + in others + because + (reason) + For example, I know someone who...",
-                    "When someone is rude, I + (reaction) + because + (reason) + I think the best approach is...",
-                    "I support friends by + (action 1) + and + (action 2) + For example, last time my friend was sad, I..."
-                ]
-            },
-            'I': {
-                topic: 'Career & Creativity',
-                questions: [
-                    "How do you plan for your future career?",
-                    "What skills do you think are essential for the future?",
-                    "How do you decide where to invest your time and money?",
-                    "What are some good investment opportunities for young people?",
-                    "In what ways are you creative?",
-                    "How important is creativity in education?",
-                    "Can creativity be taught?",
-                    "What role does creativity play in problem-solving?"
-                ],
-                structures: [
-                    "I plan my career by + (action 1) + and + (action 2) + For example, I am currently... + In the future I want to...",
-                    "I think essential skills are + (skill 1) + and + (skill 2) + because + (reason) + For example...",
-                    "I decide by + (thinking process) + because + (reason) + For example, before I invest time in...",
-                    "I think good opportunities are + (option 1) + and + (option 2) + because + (reason)...",
-                    "I am creative in + (area) + For example, I often + (creative activity) + It allows me to...",
-                    "I think creativity is + (very/somewhat) + important + because + (reason) + For example...",
-                    "Yes/No, I think + (opinion) + because + (reason) + For instance, you can learn creativity by...",
-                    "Creativity helps in problem-solving by + (how) + For example, when I faced a problem... + I used..."
-                ]
-            },
-            'J': {
-                topic: 'Memory & Life Stages',
-                questions: [
-                    "How do childhood memories influence who we are today?",
-                    "What techniques do you use to improve memory?",
-                    "How does emotion affect memory retention?",
-                    "Can forgetting be as important as remembering?",
-                    "How does your life change as you grow older?",
-                    "What are some challenges you face at different life stages?",
-                    "How do relationships develop over time?",
-                    "What advice would you give to someone entering a new stage of life?"
-                ],
-                structures: [
-                    "Childhood memories influence us by + (how) + For example, my memory of + (thing) + taught me...",
-                    "I use + (technique 1) + and + (technique 2) + because + (reason) + For example, I usually...",
-                    "Emotions affect memory + by + (how) + because + (reason) + For example, we remember events that...",
-                    "Yes/No, I think + (opinion) + because + (reason) + For example, forgetting can help us...",
-                    "As I grow older, + (what changes) + For example, my priorities have changed from... to...",
-                    "At + (life stage), people face + (challenge) + because + (reason) + For example...",
-                    "Relationships develop + by + (how) + over time + For example, my friendship with... grew because...",
-                    "I would advise them to + (action) + because + (reason) + For example, when I entered... + I learned..."
-                ]
-            }
-        };
-        
-        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbymSyhzgnVgeV7x33yrTLNsfLJywDTY8G5Wv9IGWGAwcjxDZzymszYi3BacTIvCrjI/exec";
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Upper-Intermediate Speaking Exam</title>
+<style>
+:root { --primary: #6366f1; --accent: #f43f5e; --green: #10b981; }
+* { box-sizing: border-box; }
+body {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  margin: 0; padding: 0;
+  background: linear-gradient(rgba(15,23,42,0.87),rgba(15,23,42,0.87)),
+    url('https://images.unsplash.com/photo-1434031211128-095490e7e7bb?auto=format&fit=crop&q=80&w=2070');
+  background-size: cover; background-attachment: fixed;
+  color: white; min-height: 100vh;
+  display: flex; flex-direction: column; align-items: center; overflow-x: hidden;
+}
+.clue {
+  position: fixed; background: rgba(255,255,255,0.07);
+  padding: 10px 18px; border-radius: 20px; font-size: 0.82rem; color: #cbd5e1;
+  pointer-events: none; animation: float 12s infinite ease-in-out;
+  border: 1px solid rgba(255,255,255,0.1); z-index: 0; white-space: nowrap;
+}
+@keyframes float {
+  0%,100% { transform: translate(0,0) rotate(0deg); }
+  33% { transform: translate(15px,-25px) rotate(3deg); }
+  66% { transform: translate(-10px,15px) rotate(-3deg); }
+}
+header { margin: 30px 0 10px; text-align: center; z-index: 1; }
+header h1 { margin: 0; font-size: 1.6rem; letter-spacing: 0.02em; }
+.container {
+  width: 92%; max-width: 800px;
+  background: rgba(30,41,59,0.96); backdrop-filter: blur(16px);
+  padding: 38px 40px; border-radius: 24px;
+  box-shadow: 0 25px 50px -12px rgba(0,0,0,0.7);
+  z-index: 10; text-align: center;
+  border: 1px solid rgba(255,255,255,0.09);
+  margin-bottom: 50px;
+}
+input[type="text"] {
+  padding: 14px 16px; width: 82%; border-radius: 9px;
+  border: 1px solid var(--primary); background: rgba(255,255,255,0.08);
+  color: white; font-size: 1.05rem; margin-bottom: 18px; outline: none;
+  transition: border-color 0.2s;
+}
+input:focus { border-color: #a78bfa; }
+.grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(175px,1fr)); gap: 14px; margin-top: 20px; }
+.card-btn {
+  background: rgba(99,102,241,0.1); border: 1px solid var(--primary);
+  color: white; padding: 18px; border-radius: 13px; cursor: pointer; transition: all 0.25s;
+}
+.card-btn:hover { background: var(--primary); transform: translateY(-2px) scale(1.03); }
+.hidden { display: none !important; }
+#timer { font-size: 4.2rem; font-weight: 900; color: var(--accent); margin: 8px 0; }
+.mic-wave {
+  width: 68px; height: 68px; background: var(--accent); border-radius: 50%;
+  margin: 14px auto; display: none; align-items: center; justify-content: center;
+  font-size: 1.6rem; animation: pulse 1.5s infinite;
+}
+@keyframes pulse {
+  0% { box-shadow: 0 0 0 0 rgba(244,63,94,0.7); }
+  70% { box-shadow: 0 0 0 22px rgba(244,63,94,0); }
+  100% { box-shadow: 0 0 0 0 rgba(244,63,94,0); }
+}
+.btn-main {
+  background: var(--green); color: white; border: none;
+  padding: 14px 32px; border-radius: 10px; font-size: 1.1rem;
+  font-weight: 700; cursor: pointer; margin: 8px; transition: opacity 0.2s, transform 0.15s;
+}
+.btn-main:hover { opacity: 0.88; transform: translateY(-1px); }
+.btn-start { background: var(--primary); }
+.warning-box {
+  background: rgba(244,63,94,0.18); border: 1px solid var(--accent);
+  padding: 18px 20px; border-radius: 12px; margin: 18px 0;
+  color: #fda4af; font-weight: 600; line-height: 1.6;
+}
+.answer-structure {
+  background: rgba(99,102,241,0.13); border: 1px solid rgba(99,102,241,0.45);
+  border-radius: 12px; padding: 13px 18px; margin: 14px 0 18px;
+  color: #c7d2fe; font-size: 0.91rem; line-height: 1.65; text-align: left;
+}
+.answer-structure strong {
+  color: #a5b4fc; display: block; margin-bottom: 5px;
+  font-size: 0.77rem; text-transform: uppercase; letter-spacing: 0.06em;
+}
+.structure-text { font-style: italic; }
+.transcript-live {
+  font-size: 0.82rem; color: rgba(148,163,184,0.65);
+  font-style: italic; margin-top: 6px; min-height: 18px;
+}
+.score-hero {
+  font-size: 5.5rem; font-weight: 900; line-height: 1;
+  background: linear-gradient(135deg, #6366f1 0%, #a78bfa 50%, #f43f5e 100%);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  background-clip: text; margin: 6px 0 2px;
+}
+.score-label { color: #64748b; font-size: 0.95rem; margin-bottom: 8px; }
+.score-name { color: #94a3b8; font-size: 1rem; margin-bottom: 20px; }
+.score-cats { display: grid; grid-template-columns: repeat(3,1fr); gap: 12px; margin: 18px 0; }
+.score-cat {
+  background: rgba(99,102,241,0.11); border: 1px solid rgba(99,102,241,0.32);
+  border-radius: 14px; padding: 16px 8px;
+}
+.score-cat .cat-val { font-size: 2.1rem; font-weight: 800; color: #a78bfa; }
+.score-cat .cat-name { font-size: 0.75rem; color: #64748b; margin-top: 4px; line-height: 1.3; }
+.score-cat .cat-max { font-size: 0.68rem; color: #475569; }
+.mistakes-section {
+  text-align: left; margin-top: 20px;
+  background: rgba(244,63,94,0.07); border: 1px solid rgba(244,63,94,0.28);
+  border-radius: 14px; padding: 18px 20px;
+}
+.mistakes-section h3 { color: #fda4af; margin: 0 0 12px; font-size: 0.95rem; }
+.mistake-item {
+  background: rgba(255,255,255,0.04); border-radius: 10px;
+  padding: 11px 14px; margin-bottom: 9px; border-left: 3px solid var(--accent);
+}
+.mistake-item .mq { color: #64748b; font-size: 0.75rem; margin-bottom: 3px; }
+.mistake-item .mt { color: #fecdd3; font-size: 0.88rem; line-height: 1.5; }
+.feedback-item {
+  background: rgba(255,255,255,0.04); border-radius: 10px;
+  padding: 11px 14px; margin-bottom: 9px; border-left: 3px solid #6366f1;
+}
+.tips-section {
+  text-align: left; margin-top: 14px;
+  background: rgba(16,185,129,0.07); border: 1px solid rgba(16,185,129,0.28);
+  border-radius: 14px; padding: 18px 20px;
+}
+.tips-section h3 { color: #6ee7b7; margin: 0 0 8px; font-size: 0.95rem; }
+.tips-section p { color: #a7f3d0; font-size: 0.88rem; line-height: 1.65; margin: 0; }
+.scoring-spinner { display: flex; flex-direction: column; align-items: center; padding: 30px 0; }
+.spinner {
+  width: 50px; height: 50px; border: 4px solid rgba(99,102,241,0.2);
+  border-top-color: var(--primary); border-radius: 50%;
+  animation: spin 0.85s linear infinite; margin-bottom: 14px;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+.progress-bar-wrap {
+  background: rgba(255,255,255,0.07); border-radius: 99px;
+  height: 6px; margin: 10px 0 20px; overflow: hidden;
+}
+.progress-bar {
+  height: 100%; border-radius: 99px;
+  background: linear-gradient(90deg, var(--primary), #a78bfa);
+  transition: width 0.4s ease;
+}
+</style>
+</head>
+<body>
 
-        let userName = "";        let currentCardID = "";        let currentCard = null;        let currentIdx = 0;        let timerVal = 30;        let timerInterval;        let mediaRecorder;        let audioChunks = [];
+<div class="clue" style="top:15%;left:4%">"To be honest..."</div>
+<div class="clue" style="top:9%;right:8%">"From my perspective"</div>
+<div class="clue" style="bottom:22%;left:8%">"In addition to that"</div>
+<div class="clue" style="bottom:10%;right:4%">"Essentially..."</div>
+<div class="clue" style="top:42%;left:1%">"Significant"</div>
+<div class="clue" style="top:62%;right:2%">"Pros and Cons"</div>
 
-        function showMenu() {            userName = document.getElementById('user-name').value.trim();            if (!userName) { alert("Please enter your name."); return; }
-            document.getElementById('name-screen').classList.add('hidden');
-            document.getElementById('menu-screen').classList.remove('hidden');
-            const grid = document.getElementById('card-grid');
-            grid.innerHTML = "";
-            Object.keys(cards).forEach(key => {
-                const btn = document.createElement('button');
-                btn.className = 'card-btn';
-                btn.innerHTML = `<strong>CARD ${key}</strong><br><small>${cards[key].topic}</small>`;
-                btn.onclick = () => startExam(key);
-                grid.appendChild(btn);
-            });
-        }
-        async function startExam(key) {            currentCardID = key;            currentCard = cards[key];            currentIdx = 0;
-            try {                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-                mediaRecorder = new MediaRecorder(stream);
-                mediaRecorder.ondataavailable = e => audioChunks.push(e.data);
-                mediaRecorder.onstop = autoUpload;
-                mediaRecorder.start();
-                document.getElementById('menu-screen').classList.add('hidden');
-                document.getElementById('exam-screen').classList.remove('hidden');
-                document.getElementById('card-display-title').innerText = `Card ${key}: ${currentCard.topic}`;
-                prepareQuestion();
-            } catch (err) { alert("Microphone access denied."); }
-        }
-        function prepareQuestion() {
-            if (currentIdx >= currentCard.questions.length) { finishExam(); return; }
-            document.getElementById('part-indicator').innerText = currentIdx < 4 ? "Part 1" : "Part 2";
-            document.getElementById('question-text').innerText = currentCard.questions[currentIdx];
-            
-            // Show answer structure
-            const structureBox = document.getElementById('answer-structure-box');
-            const structureText = document.getElementById('structure-text');
-            if (currentCard.structures && currentCard.structures[currentIdx]) {
-                structureText.innerText = currentCard.structures[currentIdx];
-                structureBox.classList.remove('hidden');
-            } else {
-                structureBox.classList.add('hidden');
-            }
+<header><h1>🎙️ Upper-Intermediate Speaking Exam</h1></header>
 
-            document.getElementById('timer-ui').classList.add('hidden');
-            document.getElementById('mic-animation').style.display = 'none';
-            document.getElementById('start-q-btn').classList.remove('hidden');
-            document.getElementById('next-btn').classList.add('hidden');
-        }
-        function startQuestionTimer() {
-            // Hide answer structure when recording starts
-            document.getElementById('answer-structure-box').classList.add('hidden');
-            
-            document.getElementById('start-q-btn').classList.add('hidden');
-            document.getElementById('timer-ui').classList.remove('hidden');
-            document.getElementById('mic-animation').style.display = 'flex';
-            document.getElementById('next-btn').classList.remove('hidden');
-            timerVal = 40;
-            document.getElementById('timer').innerText = timerVal;
-            timerInterval = setInterval(() => {
-                timerVal--;
-                document.getElementById('timer').innerText = timerVal;
-                if (timerVal <= 0) prepareNextQuestion();
-            }, 1000);
-        }
-        function prepareNextQuestion() { clearInterval(timerInterval); currentIdx++; prepareQuestion(); }
-        function finishExam() { mediaRecorder.stop(); document.getElementById('exam-screen').classList.add('hidden'); document.getElementById('result-screen').classList.remove('hidden'); }
+<!-- NAME -->
+<div class="container" id="name-screen">
+  <h2>Welcome</h2>
+  <p style="color:#94a3b8">Please enter your full name to start the exam:</p>
+  <input type="text" id="user-name" placeholder="Full Name" autocomplete="off">
+  <br>
+  <button class="btn-main" onclick="showMenu()">Continue to Cards →</button>
+</div>
 
-        async function autoUpload() {
-            const blob = new Blob(audioChunks, { type: 'audio/webm' });
-            const reader = new FileReader();
-            reader.readAsDataURL(blob);
-            reader.onloadend = async () => {
-                const base64 = reader.result.split(',')[1];
-                try {
-                    await fetch(SCRIPT_URL, {
-                        method: "POST",
-                        mode: "no-cors",
-                        body: JSON.stringify({ audio: base64, name: userName + " (Card " + currentCardID + ")" })
-                    });
-                    document.getElementById('final-status').innerText = "Exam Sent Successfully!";
-                    document.getElementById('done-message').innerText = `Well done, ${userName}! Your test has been received.`;
-                    document.getElementById('warning-area').style.display = "none";
-                } catch (e) {
-                    document.getElementById('final-status').innerText = "Upload Failed";
-                    document.getElementById('done-message').innerText = "There was an error sending your exam. Please try again.";
-                    document.getElementById('warning-area').innerText = "❌ ERROR: Submission failed. Check your internet connection.";
-                }
-            };
-        }
-    </script></body></html>
+<!-- MENU -->
+<div class="container hidden" id="menu-screen">
+  <h2>Select Your Card</h2>
+  <p style="color:#64748b;font-size:0.9rem">Choose the card your teacher has assigned to you.</p>
+  <div class="grid" id="card-grid"></div>
+</div>
+
+<!-- EXAM -->
+<div class="container hidden" id="exam-screen">
+  <h2 id="card-display-title">Card</h2>
+  <h3 id="part-indicator" style="color:#94a3b8;margin-top:0">Part 1</h3>
+  <div class="progress-bar-wrap"><div class="progress-bar" id="progress-bar" style="width:0%"></div></div>
+  <div id="question-box">
+    <p id="question-text" style="font-size:1.55rem;margin-bottom:18px;line-height:1.45">Waiting...</p>
+    <div id="answer-structure-box" class="answer-structure">
+      <strong>💡 Answer Structure</strong>
+      <span class="structure-text" id="structure-text"></span>
+    </div>
+    <div id="timer-ui" class="hidden">
+      <div class="mic-wave" id="mic-animation">🎙️</div>
+      <div id="timer">40</div>
+      <div class="transcript-live" id="transcript-live">Listening…</div>
+    </div>
+    <button id="start-q-btn" class="btn-main btn-start" onclick="startQuestionTimer()">▶ Start Recording</button>
+    <button id="next-btn" class="btn-main hidden" onclick="prepareNextQuestion()">Next Question →</button>
+  </div>
+</div>
+
+<!-- UPLOAD RESULT -->
+<div class="container hidden" id="result-screen">
+  <h2 id="final-status">Uploading…</h2>
+  <div class="warning-box" id="warning-area">
+    ⚠️ DO NOT CLOSE THIS PAGE YET.<br>
+    Your audio is being sent to the teacher and your answers are being evaluated.
+  </div>
+  <p id="done-message">Please wait…</p>
+</div>
+
+<!-- SCORE SCREEN -->
+<div class="container hidden" id="score-screen">
+  <h2 style="color:#94a3b8;font-size:1rem;font-weight:500;margin-bottom:4px">YOUR SCORE</h2>
+  <div class="score-hero" id="score-total">—</div>
+  <div class="score-label">out of 25</div>
+  <div class="score-name" id="score-name-display"></div>
+  <div class="score-cats">
+    <div class="score-cat">
+      <div class="cat-val" id="cat-grammar">—</div>
+      <div class="cat-name">Grammar</div>
+      <div class="cat-max">/ 10</div>
+    </div>
+    <div class="score-cat">
+      <div class="cat-val" id="cat-task">—</div>
+      <div class="cat-name">Task<br>Achievement</div>
+      <div class="cat-max">/ 10</div>
+    </div>
+    <div class="score-cat">
+      <div class="cat-val" id="cat-vocab">—</div>
+      <div class="cat-name">Lexical<br>Resource</div>
+      <div class="cat-max">/ 5</div>
+    </div>
+  </div>
+  <div class="scoring-spinner" id="scoring-spinner">
+    <div class="spinner"></div>
+    <p style="color:#64748b;font-size:0.9rem">AI is evaluating your answers…</p>
+  </div>
+  <div id="score-results" class="hidden">
+    <div class="mistakes-section" id="question-feedback-section" style="background:rgba(99,102,241,0.07);border:1px solid rgba(99,102,241,0.28);"></div>
+    <div class="mistakes-section" id="mistakes-section"></div>
+    <div class="tips-section" id="tips-section"></div>
+  </div>
+  <br>
+  <button onclick="location.reload()" style="background:none;border:none;color:#475569;cursor:pointer;text-decoration:underline;font-size:0.85rem">Take another test</button>
+</div>
+
+<script>
+const DEEPSEEK_KEY = "sk-527571fb922941168935f8a3d939876f";
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbymSyhzgnVgeV7x33yrTLNsfLJywDTY8G5Wv9IGWGAwcjxDZzymszYi3BacTIvCrjI/exec";
+
+const cards = {
+  'A': {
+    topic: 'Communication',
+    questions: [
+      "Do you write letters?",
+      "What method of communication do you prefer to contact people?",
+      "What do you think about face-to-face communication?",
+      "How often do you text people?",
+      "Do you think handwritten letters will be common in the future?",
+      "What are the advantages of electronic communication?",
+      "Do you think we depend too much on gadgets?",
+      "What are the effects of the Internet on society?"
+    ],
+    structures: [
+      "Yes/No, (rarely/sometimes/often) + to (who) + because/since + (reason). For example, the last time I wrote a letter was…",
+      "I prefer + (method) + because + (reason). It allows me to… For instance, when I need to contact someone…",
+      "I think face-to-face communication is + (adj) + because + (reason). For example, you can see expressions and…",
+      "I text people + (how often) + mainly + (who) + because + (reason). For example, I usually text my…",
+      "I (don't) think so + because + (reason). However, + (counterpoint). In the future, people might…",
+      "There are several advantages. First, … Second, … For example, you can instantly… Overall, it makes…",
+      "Yes/No, I think + (opinion) + because + (reason). For instance, people nowadays spend… without…",
+      "The Internet has + (positive/negative) effects such as… For example, it has changed the way we… and…"
+    ]
+  },
+  'B': {
+    topic: 'Binge-Watching & Screen Time',
+    questions: [
+      "How many hours do you spend in front of the screen?",
+      "Do you watch TV programs or online videos?",
+      "What type of videos do you watch most often?",
+      "Have your viewing habits changed in the last few years?",
+      "What is binge watching?",
+      "Why do you think people binge-watch?",
+      "What is your attitude to binge-watching?",
+      "How do people watch TV series nowadays?"
+    ],
+    structures: [
+      "I spend about + (time) + per day + mainly + (activity) + because + (reason). For example, I usually…",
+      "I (mostly) watch + (type) + because + (reason). For example, I recently watched…",
+      "I usually watch + (type) + because + (reason) + such as… They help me to…",
+      "Yes/No, + (how they changed). Before I used to… but now I… because…",
+      "Binge-watching is + (definition). It means + (explain). For example, watching several episodes of… in one sitting.",
+      "I think people binge-watch + because + (reason 1) + and also + (reason 2). For example, when a show is…",
+      "My attitude is + (positive/negative/mixed) + because + (reason). However… For instance, if you watch too much…",
+      "Nowadays people watch + (how) + instead of + (old way) + because + (reason). For example, streaming platforms…"
+    ]
+  },
+  'C': {
+    topic: 'Family & Regrets',
+    questions: [
+      "Do you come from a large family?",
+      "Do you get on well with your relatives?",
+      "Whom are you close to in your family?",
+      "Whom do you turn to for advice?",
+      "What would you do if you could turn back time?",
+      "What is your biggest regret?",
+      "Is there any place you would live in if you had a chance?",
+      "What would you do if you could read people's minds?"
+    ],
+    structures: [
+      "Yes/No, my family is + (size). We have + (members) + and we usually…",
+      "Yes/No, + (how well) + because + (reason). For example, we often… together.",
+      "I am closest to + (person) + because + (reason). We usually + (activity together)…",
+      "I usually turn to + (person) + because + (reason). For example, when I have a problem, I…",
+      "If I could turn back time, I would + (action) + because + (reason). This would have helped me…",
+      "My biggest regret is + (thing) + because + (reason). I wish I had… It taught me that…",
+      "If I had a chance, I would live in + (place) + because + (reason 1) + and + (reason 2)…",
+      "If I could read minds, I would + (action) + because + (reason). For example, I would…"
+    ]
+  },
+  'D': {
+    topic: 'Language & Culture',
+    questions: [
+      "Why are you learning English?",
+      "Do you read the news in English?",
+      "What cultural events or festivals do you attend?",
+      "Do you enjoy trying food from different countries?",
+      "Speak about a foreign culture you know or like.",
+      "Describe a popular cultural event in your country.",
+      "Why do you think this event is important?",
+      "What new culture would you like to explore and why?"
+    ],
+    structures: [
+      "I am learning English + because/in order to + (reason 1) + and also + (reason 2). For example, I want to…",
+      "Yes/No, + (how often) + because + (reason). For instance, I recently read an article about…",
+      "I (often/sometimes) attend + (event) + because + (reason). For example, last time I went to…",
+      "Yes/No, I + (enjoy/don't enjoy) + trying + (type of food) + because + (reason). For example, I once tried…",
+      "A culture I know well is + (culture). It is interesting because + (reason). For example, they have a tradition of…",
+      "(Event name) is a popular event + where people + (activity). It usually takes place + (when/where) and…",
+      "I think it is important + because + (reason 1) + and + (reason 2). It helps people to…",
+      "I would like to explore + (culture) + because + (reason). I am especially interested in their…"
+    ]
+  },
+  'E': {
+    topic: 'Technology & Generation Gap',
+    questions: [
+      "Do you think you are tech-savvy?",
+      "What do you usually use the Internet for?",
+      "Have you ever been hacked?",
+      "Have you heard of Internet-based cyber-attacks?",
+      "What does the word 'generation gap' mean?",
+      "How does the lifestyle of your parents differ from yours?",
+      "Speak about how your life would be without the Internet.",
+      "Describe the best invention of the century for you."
+    ],
+    structures: [
+      "Yes/No, I think I am + (level) + tech-savvy + because + (reason). For example, I can easily…",
+      "I mainly use the Internet for + (purpose 1) + and + (purpose 2). For example, every day I…",
+      "Yes/No. (If yes: what happened + how I solved it. If no: but I know someone who was hacked when…)",
+      "Yes/No, I have heard that + (describe cyber-attack). It is dangerous because it can…",
+      "Generation gap means + (definition). It refers to + (explanation). For example, my parents and I…",
+      "My parents' lifestyle differs + in terms of + (aspect 1) + and + (aspect 2). For example, they used to…",
+      "Without the Internet, my life would be + (how). I would have to + (alternative). It would affect my…",
+      "I think the best invention is + (invention) + because + (reason 1) + and + (reason 2). It has changed…"
+    ]
+  },
+  'F': {
+    topic: 'Money & Saving',
+    questions: [
+      "How do you usually save money?",
+      "Do you prefer to save money in a bank or invest it? Why?",
+      "What do you think is the best way to invest money? Why?",
+      "Do you think it's important to start saving money at a young age? Why or why not?",
+      "How do you spend your money?",
+      "What are some common mistakes people make with spending their money?",
+      "How can someone learn more about saving money and investing?",
+      "What would you invest in if you had a million dollars?"
+    ],
+    structures: [
+      "I usually save money by + (method) + because + (reason). For example, every month I set aside…",
+      "I prefer to + (save/invest) + because + (reason). For instance, keeping money in a bank…",
+      "I think the best way is + (method) + because + (reason 1) + and + (reason 2). For example…",
+      "Yes/No, I think it is + (important/not important) + because + (reason). For example, if you start early…",
+      "I usually spend my money on + (category 1) + and + (category 2). For example, most of my budget goes to…",
+      "A common mistake is + (mistake) + because + (reason). For example, many people buy things they don't need…",
+      "Someone can learn by + (method 1) + or + (method 2) + such as reading financial books or following…",
+      "If I had a million dollars, I would invest in + (thing) + because + (reason). This would help me to…"
+    ]
+  },
+  'G': {
+    topic: 'Crime & Safety',
+    questions: [
+      "Do you think your city is safe? Why or why not?",
+      "What are some common crimes in your area?",
+      "Have you ever witnessed a crime? What happened?",
+      "Have you ever broken a rule or law?",
+      "How do you feel about security cameras in public places?",
+      "Do you think harsh punishments reduce crime? Why or why not?",
+      "What can people do to stay safe and avoid becoming a victim of crime?",
+      "What rules or laws do you think are the most important for a safe society?"
+    ],
+    structures: [
+      "Yes/No, I think my city is + (safe/unsafe) + because + (reason). For example, in my neighbourhood…",
+      "Some common crimes are + (crime 1) + and + (crime 2). For instance, in my area people often…",
+      "Yes/No. (If yes: describe what happened, when, and how. If no: but I have heard about a case where…)",
+      "Yes/No. (If yes: describe the situation + what I learned from it. If no: because I always try to follow…)",
+      "I feel + (positive/negative/neutral) + about them + because + (reason). For example, they can help…",
+      "Yes/No, I think + (opinion) + because + (reason). However, some people argue that…",
+      "People can stay safe by + (action 1) + and + (action 2). For example, you should always be aware of…",
+      "I think the most important rules are + (rule 1) + and + (rule 2) + because + (reason)…"
+    ]
+  },
+  'H': {
+    topic: 'Emotions & Behaviour',
+    questions: [
+      "What makes you feel happy and why?",
+      "How do you deal with stress or anxiety?",
+      "What do you do when you feel angry?",
+      "How do you usually express your feelings to others?",
+      "Describe a time when you felt really proud of yourself.",
+      "What are some positive behaviors that you admire in others?",
+      "How do you react when someone is rude to you?",
+      "How do you support a friend who is feeling sad?"
+    ],
+    structures: [
+      "(Thing/activity) makes me happy + because + (reason). For example, whenever I… I feel a sense of…",
+      "I usually deal with stress by + (method) + because + (reason). For example, when I feel stressed I…",
+      "When I feel angry, I + (action) + because + (reason). This helps me to calm down and…",
+      "I usually express my feelings by + (method) + because + (reason). For example, I often talk to…",
+      "Once, I felt proud when + (situation) + because + (reason). It taught me that I can…",
+      "I admire + (behavior) + in others + because + (reason). For example, I know someone who always…",
+      "When someone is rude, I + (reaction) + because + (reason). I think the best approach is to…",
+      "I support friends by + (action 1) + and + (action 2). For example, last time my friend was sad, I…"
+    ]
+  },
+  'I': {
+    topic: 'Career & Creativity',
+    questions: [
+      "How do you plan for your future career?",
+      "What skills do you think are essential for the future?",
+      "How do you decide where to invest your time and money?",
+      "What are some good investment opportunities for young people?",
+      "In what ways are you creative?",
+      "How important is creativity in education?",
+      "Can creativity be taught?",
+      "What role does creativity play in problem-solving?"
+    ],
+    structures: [
+      "I plan my career by + (action 1) + and + (action 2). For example, I am currently… In the future I want to…",
+      "I think essential skills are + (skill 1) + and + (skill 2) + because + (reason). For example, in the future…",
+      "I decide by + (thinking process) + because + (reason). For example, before I invest time in something, I…",
+      "I think good opportunities are + (option 1) + and + (option 2) + because + (reason). For instance…",
+      "I am creative in + (area). For example, I often + (creative activity). It allows me to express…",
+      "I think creativity is + (very/somewhat) + important + because + (reason). For example, students who…",
+      "Yes/No, I think + (opinion) + because + (reason). For instance, you can develop creativity by…",
+      "Creativity helps in problem-solving by + (how). For example, when I faced a problem, I used…"
+    ]
+  },
+  'J': {
+    topic: 'Memory & Life Stages',
+    questions: [
+      "How do childhood memories influence who we are today?",
+      "What techniques do you use to improve memory?",
+      "How does emotion affect memory retention?",
+      "Can forgetting be as important as remembering?",
+      "How does your life change as you grow older?",
+      "What are some challenges you face at different life stages?",
+      "How do relationships develop over time?",
+      "What advice would you give to someone entering a new stage of life?"
+    ],
+    structures: [
+      "Childhood memories influence us by + (how). For example, my memory of + (thing) + taught me to…",
+      "I use + (technique 1) + and + (technique 2) + because + (reason). For example, I usually…",
+      "Emotions affect memory + by + (how) + because + (reason). For example, we remember events that made us feel…",
+      "Yes/No, I think + (opinion) + because + (reason). For example, forgetting can help us let go of…",
+      "As I grow older, + (what changes). For example, my priorities have shifted from… to…",
+      "At + (life stage), people face + (challenge) + because + (reason). For example, as a student I…",
+      "Relationships develop + by + (how) + over time. For example, my friendship with someone grew because…",
+      "I would advise them to + (action) + because + (reason). For example, when I entered… I learned that…"
+    ]
+  }
+};
+
+let userName = "";
+let currentCardID = "";
+let currentCard = null;
+let currentIdx = 0;
+let timerVal = 40;
+let timerInterval;
+let mediaRecorder;
+let audioChunks = [];
+let recognition = null;
+let currentTranscript = "";
+let transcripts = [];
+
+function show(id) { document.getElementById(id).classList.remove('hidden'); }
+function hide(id) { document.getElementById(id).classList.add('hidden'); }
+
+function showMenu() {
+  userName = document.getElementById('user-name').value.trim();
+  if (!userName) { alert("Please enter your name."); return; }
+  hide('name-screen'); show('menu-screen');
+  const grid = document.getElementById('card-grid');
+  grid.innerHTML = "";
+  Object.keys(cards).forEach(key => {
+    const btn = document.createElement('button');
+    btn.className = 'card-btn';
+    btn.innerHTML = `<strong>CARD ${key}</strong><br><small>${cards[key].topic}</small>`;
+    btn.onclick = () => startExam(key);
+    grid.appendChild(btn);
+  });
+}
+
+async function startExam(key) {
+  currentCardID = key;
+  currentCard = cards[key];
+  currentIdx = 0;
+  transcripts = [];
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    mediaRecorder = new MediaRecorder(stream);
+    audioChunks = [];
+    mediaRecorder.ondataavailable = e => audioChunks.push(e.data);
+    mediaRecorder.onstop = autoUpload;
+    mediaRecorder.start();
+    hide('menu-screen'); show('exam-screen');
+    document.getElementById('card-display-title').innerText = `Card ${key}: ${currentCard.topic}`;
+    prepareQuestion();
+  } catch (err) { alert("Microphone access denied. Please allow microphone access and try again."); }
+}
+
+function prepareQuestion() {
+  if (currentIdx >= currentCard.questions.length) { finishExam(); return; }
+  document.getElementById('part-indicator').innerText = currentIdx < 4 ? "Part 1" : "Part 2";
+  document.getElementById('question-text').innerText = currentCard.questions[currentIdx];
+  document.getElementById('progress-bar').style.width = `${(currentIdx / currentCard.questions.length) * 100}%`;
+  const structureBox = document.getElementById('answer-structure-box');
+  if (currentCard.structures && currentCard.structures[currentIdx]) {
+    document.getElementById('structure-text').innerText = currentCard.structures[currentIdx];
+    structureBox.classList.remove('hidden');
+  } else {
+    structureBox.classList.add('hidden');
+  }
+  hide('timer-ui');
+  document.getElementById('mic-animation').style.display = 'none';
+  document.getElementById('transcript-live').innerText = '';
+  show('start-q-btn');
+  hide('next-btn');
+}
+
+function startQuestionTimer() {
+  hide('answer-structure-box');
+  hide('start-q-btn');
+  show('timer-ui');
+  document.getElementById('mic-animation').style.display = 'flex';
+  show('next-btn');
+  currentTranscript = "";
+  startSpeechRecognition();
+  timerVal = 40;
+  document.getElementById('timer').innerText = timerVal;
+  timerInterval = setInterval(() => {
+    timerVal--;
+    document.getElementById('timer').innerText = timerVal;
+    if (timerVal <= 0) prepareNextQuestion();
+  }, 1000);
+}
+
+function prepareNextQuestion() {
+  clearInterval(timerInterval);
+  stopSpeechRecognition();
+  transcripts.push({
+    question: currentCard.questions[currentIdx],
+    answer: currentTranscript.trim() || "(no speech detected)"
+  });
+  currentIdx++;
+  prepareQuestion();
+}
+
+function finishExam() {
+  mediaRecorder.stop();
+  hide('exam-screen');
+  show('result-screen');
+}
+
+function startSpeechRecognition() {
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SR) return;
+  recognition = new SR();
+  recognition.continuous = true;
+  recognition.interimResults = true;
+  recognition.lang = 'en-US';
+  recognition.onresult = (event) => {
+    let interim = '', final = '';
+    for (let i = event.resultIndex; i < event.results.length; i++) {
+      const t = event.results[i][0].transcript;
+      if (event.results[i].isFinal) final += t + ' ';
+      else interim += t;
+    }
+    currentTranscript += final;
+    document.getElementById('transcript-live').innerText = interim ? `"${interim}"` : '';
+  };
+  recognition.onerror = () => {};
+  try { recognition.start(); } catch(e) {}
+}
+
+function stopSpeechRecognition() {
+  if (recognition) { try { recognition.stop(); } catch(e) {} recognition = null; }
+}
+
+async function autoUpload() {
+  const blob = new Blob(audioChunks, { type: 'audio/webm' });
+  const reader = new FileReader();
+  reader.readAsDataURL(blob);
+  reader.onloadend = async () => {
+    const base64 = reader.result.split(',')[1];
+    try {
+      await fetch(SCRIPT_URL, {
+        method: "POST", mode: "no-cors",
+        body: JSON.stringify({ audio: base64, name: `${userName} (Card ${currentCardID})` })
+      });
+    } catch(e) {}
+    document.getElementById('final-status').innerText = "✅ Exam Sent!";
+    document.getElementById('done-message').innerText = `Well done, ${userName}! Calculating your score…`;
+    hide('warning-area');
+    setTimeout(() => {
+      hide('result-screen');
+      show('score-screen');
+      document.getElementById('score-name-display').innerText = userName + " · Card " + currentCardID;
+      scoreWithGemini();
+    }, 1500);
+  };
+}
+
+async function scoreWithGemini() {
+  show('scoring-spinner');
+  hide('score-results');
+
+  const qaBlock = transcripts.map((t, i) =>
+    `Q${i + 1}: ${t.question}\nStudent's answer: ${t.answer}`
+  ).join('\n\n');
+
+  const prompt = `You are a strict but fair English language examiner assessing Upper-Intermediate (B2) level students.
+A student completed an 8-question speaking exam. Evaluate their spoken responses below.
+
+Score across exactly 3 categories (total must equal exactly 25):
+- Grammar: 0-10 points
+- Task Achievement: 0-10 points
+- Lexical Resource: 0-5 points
+
+For each question, provide a short individual feedback (1-2 sentences) on how well the student answered.
+Also identify up to 5 specific mistakes (grammar or vocabulary errors) with brief, clear corrections.
+Then write 2-3 short encouraging improvement tips addressed to the student.
+
+IMPORTANT: Return ONLY a valid JSON object. No markdown fences, no extra text before or after the JSON.
+
+{
+  "grammar": <integer 0-10>,
+  "task": <integer 0-10>,
+  "vocabulary": <integer 0-5>,
+  "total": <integer 0-25>,
+  "question_feedback": [
+    { "q": "<short question label>", "feedback": "<1-2 sentence feedback on this answer>" }
+  ],
+  "mistakes": [
+    { "question": "<short question label>", "error": "<what was wrong and the correction>" }
+  ],
+  "tips": "<2-3 sentences of improvement advice>"
+}
+
+Student answers:
+${qaBlock}`;
+
+  try {
+    const res = await fetch("https://api.deepseek.com/chat/completions", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${DEEPSEEK_KEY}`
+      },
+      body: JSON.stringify({
+        model: "deepseek-chat",
+        messages: [{ role: "user", content: prompt }]
+      })
+    });
+    const data = await res.json();
+    if (data.error) throw new Error(data.error.message);
+    let raw = data?.choices?.[0]?.message?.content || '';
+    raw = raw.replace(/```json|```/g, '').trim();
+    // Extract JSON object if there's surrounding text
+    const jsonMatch = raw.match(/\{[\s\S]*\}/);
+    if (!jsonMatch) throw new Error("No valid JSON returned");
+    const result = JSON.parse(jsonMatch[0]);
+    displayScore(result);
+  } catch (e) {
+    document.getElementById('scoring-spinner').innerHTML = `
+      <p style="color:#fda4af;padding:16px 0">⚠️ Scoring failed. Your audio was still sent to the teacher.<br>
+      <small style="color:#64748b">${e.message}</small></p>
+      <button onclick="scoreWithGemini()" style="background:var(--primary);color:white;border:none;padding:10px 22px;border-radius:8px;cursor:pointer;margin-top:8px">Retry</button>`;
+  }
+}
+
+function displayScore(r) {
+  hide('scoring-spinner');
+  show('score-results');
+  const total = r.total ?? (r.grammar + r.task + r.vocabulary);
+  document.getElementById('score-total').innerText = total;
+  document.getElementById('cat-grammar').innerText = r.grammar;
+  document.getElementById('cat-task').innerText = r.task;
+  document.getElementById('cat-vocab').innerText = r.vocabulary;
+
+  // Per-question feedback
+  const qf = document.getElementById('question-feedback-section');
+  if (r.question_feedback && r.question_feedback.length > 0) {
+    qf.innerHTML = `<h3>📝 Question-by-Question Feedback</h3>` +
+      r.question_feedback.map((f, i) => `
+        <div class="feedback-item">
+          <div class="mq">Q${i+1}: ${f.q}</div>
+          <div class="mt" style="color:#bfdbfe">${f.feedback}</div>
+        </div>`).join('');
+  }
+
+  // Mistakes
+  const ms = document.getElementById('mistakes-section');
+  if (r.mistakes && r.mistakes.length > 0) {
+    ms.innerHTML = `<h3>🔴 Mistakes &amp; Corrections</h3>` +
+      r.mistakes.map(m => `
+        <div class="mistake-item">
+          <div class="mq">Question: ${m.question}</div>
+          <div class="mt">${m.error}</div>
+        </div>`).join('');
+  } else {
+    ms.innerHTML = `<h3>🟢 No major mistakes found — excellent work!</h3>`;
+  }
+
+  document.getElementById('tips-section').innerHTML =
+    `<h3>💡 Tips to Improve</h3><p>${r.tips}</p>`;
+}
+</script>
+</body>
+</html>
