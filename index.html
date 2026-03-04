@@ -614,16 +614,18 @@ function launchRecognition() {
   recognition.maxAlternatives = 1;
 
   recognition.onresult = (e) => {
-    let interim = '';
-    for (let i = e.resultIndex; i < e.results.length; i++) {
-      if (e.results[i].isFinal) finalTranscript += e.results[i][0].transcript + ' ';
+    let final = "";
+    let interim = "";
+    for (let i = 0; i < e.results.length; i++) {
+      if (e.results[i].isFinal) final += e.results[i][0].transcript + " ";
       else interim += e.results[i][0].transcript;
     }
-    transcript = finalTranscript + interim;
-    document.getElementById('transcript-placeholder').style.display = 'none';
-    document.getElementById('transcript-live').textContent = transcript;
-    document.getElementById('transcript-box').classList.add('active');
-    document.getElementById('ios-stopped-note').classList.remove('show');
+    finalTranscript = final;
+    transcript = final + interim;
+    document.getElementById("transcript-placeholder").style.display = "none";
+    document.getElementById("transcript-live").textContent = transcript;
+    document.getElementById("transcript-box").classList.add("active");
+    document.getElementById("ios-stopped-note").classList.remove("show");
   };
 
   recognition.onend = () => {
